@@ -1,0 +1,27 @@
+.newRoom-area {
+  background-color: white;
+  min-height: 30px;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+.newRoom-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.newRoom-button {
+  min-width: 60px;
+  border-radius: 0;
+  background-color: #f7e600;
+  border: none;
+  padding: 10px;
+}
+.send-button:hover {
+  cursor: pointer;
+}
+.send-button:active {
+  background-color: yellow;
+}
