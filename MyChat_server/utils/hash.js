@@ -1,18 +1,16 @@
 const bcrypt = require('bcrypt');
 
-module.exports = function hash(pw) {
-  console.log('hashing :', pw);
+// 비밀번호 해싱
+async function hashPassword(pw) {
   const password = pw;
   const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  return hashedPassword;
+}
 
-  bcrypt.hash(password, saltRounds, async (err, hash) => {
-    try {
-      const hashedPassword = hash;
-      console.log('hashed :', hashedPassword);
-      return hashedPassword;
-    } catch (error) {
-      console.log('해싱 저장 중 에러 발생');
-      return;
-    }
-  });
-};
+// 비밀번호 비교
+async function comparePassword(pw, hashedPw) {
+  return await bcrypt.compare(pw, hashedPw);
+}
+
+module.exports = { hashPassword, comparePassword };

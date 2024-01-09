@@ -1,4 +1,5 @@
 const User = require('../Models/user');
+const { hashPassword, comparePassword } = require('../utils/hash');
 const userController = {};
 
 // 유저 등록
@@ -6,10 +7,11 @@ userController.registerUser = async (email, pw, un, sid) => {
   // 이미 있는 유저인지 확인
   let user = await User.findOne({ email: email });
   if (!user) {
+    const hashedPW = await hashPassword(pw);
     // -> 없으면 새로 저장
     user = new User({
       email: email,
-      password: pw,
+      password: hashedPW,
       name: un,
       token: sid,
       online: false,
@@ -27,7 +29,8 @@ userController.loginUser = async (email, pw, sid) => {
   let user = await User.findOne({ email: email });
   // -> 있다면 비밀번호 조회 후
   if (user) {
-    if (user.password === pw) {
+    const passwordMatch = await comparePassword(pw, user.password);
+    if (passwordMatch) {
       // -> 일치하면 token값 바꾸고 로그인
       user.token = sid;
       user.online = true;
