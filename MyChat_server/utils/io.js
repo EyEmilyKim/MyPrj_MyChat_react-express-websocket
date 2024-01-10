@@ -7,30 +7,6 @@ module.exports = function (io) {
   io.on('connection', async (socket) => {
     console.log('client is connected : ', socket.id);
 
-    //유저 등록 
-    socket.on('signup', async (email, pw, un, cb) => {
-      console.log('io.js/signup called ', email, pw, un);
-      //유저 정보를 저장
-      try {
-        const user = await userController.registerUser(email, pw, un, socket.id);
-        cb({ ok: true, user: user });
-      } catch (error) {
-        cb({ ok: false, error: error.message });
-      }
-    });
-
-    //유저 로그인
-    socket.on('login', async (email, pw, cb) => {
-      console.log('io.js/login called ', email);
-      //유저 정보를 저장
-      try {
-        const user = await userController.loginUser(email, pw, socket.id);
-        cb({ ok: true, user: user });
-      } catch (error) {
-        cb({ ok: false, error: error.message });
-      }
-    });
-
     //룸 정보 보내주기
     socket.on('getRooms', async () => {
       console.log('io.js/getRooms called');

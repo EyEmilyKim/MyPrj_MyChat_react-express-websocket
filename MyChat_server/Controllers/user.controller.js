@@ -1,54 +1,73 @@
-const User = require('../Models/user');
-const { hashPassword, comparePassword } = require('../utils/hash');
+const userService = require('../services/user.service');
 const userController = {};
+const jwt = require('../utils/jwt');
 
 // 유저 등록
-userController.registerUser = async (email, pw, un, sid) => {
-  // 이미 있는 유저인지 확인
-  let user = await User.findOne({ email: email });
-  if (!user) {
-    const hashedPW = await hashPassword(pw);
-    // -> 없으면 새로 저장
-    user = new User({
-      email: email,
-      password: hashedPW,
-      name: un,
-      token: sid,
-      online: false,
-    });
-  } else {
-    throw new Error('이미 사용중인 이메일입니다.');
+userController.registerUser = async (req, res) => {
+  console.log('userController.registerUser called', req.body);
+  try {
+    const { email, password, userName } = req.body;
+    const { user } = await userService.registerUser(email, password, userName);
+    res.status(200).json({ message: '등록 성공', user });
+  } catch (error) {
+    console.log('userController.registerUser failed', error);
+    res.status(500).json({ error: error.message });
   }
-  await user.save();
-  return user;
 };
 
 // 유저 로그인
-userController.loginUser = async (email, pw, sid) => {
-  // 이미 있는 유저인지 확인
-  let user = await User.findOne({ email: email });
-  // -> 있다면 비밀번호 조회 후
-  if (user) {
-    const passwordMatch = await comparePassword(pw, user.password);
-    if (passwordMatch) {
-      // -> 일치하면 token값 바꾸고 로그인
-      user.token = sid;
-      user.online = true;
-      await user.save();
-      return user;
-    } else {
-      throw new Error('이메일 또는 비밀번호가 유효하지 않습니다.');
-    }
-  } else {
-    throw new Error('이메일 또는 비밀번호가 유효하지 않습니다.');
+userController.loginUser = async (req, res) => {
+  console.log('userController.loginUser called', req.body);
+  try {
+    const { email, password } = req.body;
+    const { user, accessToken, refreshToken } = await userService.loginUser(
+      email,
+      password
+    );
+    res
+      .cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: false,
+      })
+      .cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: false,
+      })
+      .status(200)
+      .json({ message: '로그인 성공', user });
+  } catch (error) {
+    console.log('userController.loginUser failed', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-userController.checkUser = async (sid) => {
-  // console.log("checkUser called");
-  const user = await User.findOne({ token: sid });
-  if (!user) throw new Error('user not found');
-  return user;
+// 유저 로그인 유지
+userController.loginSuccess = async (req, res) => {
+  console.log('userController.loginSuccess called', req.body);
+  try {
+    const accessToken = req.cookies.accessToken;
+    console.log('accessToken', accessToken);
+    const data = jwt.verifyToken(accessToken, 'AT');
+
+    const user = await userService.checkUser(data.email);
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log('userController.loginSuccess failed', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 유저 로그아웃
+userController.logout = async (req, res) => {
+  console.log('userController.logout called', req.body);
+  try {
+    res.cookie("accessToken", "");
+    res.status(200).json({ message: '로그아웃 성공' });
+  } catch (error) {
+    console.log('userController.logout failed', error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 module.exports = userController;

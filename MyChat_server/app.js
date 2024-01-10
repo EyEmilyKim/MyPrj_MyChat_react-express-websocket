@@ -1,17 +1,36 @@
 const express = require('express');
-const mongoose = require('mongoose');
 require('dotenv').config();
-const cors = require('cors');
 const app = express();
-app.use(cors());
-const Room = require('./Models/room');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const userController = require('./Controllers/user.controller.js');
 
+// DB 연결
 mongoose
   .connect(process.env.DB)
   .then(() => console.log('몽고디비에 연결되었습니다!'))
   .catch((err) => console.log('몽고디비 연결 오류 : ', err));
 
+// CORS 미들웨어
+const corsOptions = {
+  origin: 'http://localhost:3000', // 클라이언트의 주소
+  credentials: true, // credentials을 허용하도록 설정
+};
+app.use(cors(corsOptions));
+
+// 미들웨어
+app.use(express.json()); // req.body 파싱 미들웨어
+app.use(cookieParser()); // req.cookies 파싱 미들웨어
+
+// 엔드포인트 설정
+app.post('/signup', userController.registerUser);
+app.post('/login', userController.loginUser);
+app.get('/login/success', userController.loginSuccess);
+app.post("/logout", userController.logout);
+
 // 임의로 룸 만들어주기
+const Room = require('./Models/room');
 app.get('/getrooms', async (req, res) => {
   Room.insertMany([
     {

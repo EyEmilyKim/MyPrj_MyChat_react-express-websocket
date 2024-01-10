@@ -1,11 +1,11 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { styled, css, border } from '@mui/system';
+import { styled, css } from '@mui/system';
 import { Modal as BaseModal } from '@mui/base/Modal';
 import { Button, Input } from '@mui/base';
 import './SignupModal.css';
-import socket from '../../server';
+import axios from 'axios';
 
 export default function SignupModal() {
   const [open, setOpen] = React.useState(false);
@@ -20,17 +20,34 @@ export default function SignupModal() {
     event.preventDefault();
     console.log('handleSignup called', email);
 
-    socket.emit('signup', email, password, userName, (res) => {
-      console.log('signup res : ', res);
-      if (res?.ok) {
-        alert('등록 성공 !\n', res.user);
-        console.log('등록 성공 !', res.user);
-      } else {
-        alert('등록에 실패했습니다 ! 관리자에게 문의해주세요..');
-      }
-    });
-
-    handleClose();
+    axios
+      .post(
+        'http://localhost:5001/signup',
+        {
+          email: email,
+          password: password,
+          userName: userName,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+      .then((res) => {
+        if (res.status === 200) {
+          alert('등록 성공 ! 로그인 후 이용해주세요', res.data.user);
+          handleClose();
+        } else {
+          console.log(res.data.error);
+          alert(res.data.error);
+        }
+      })
+      .catch((error) => {
+        console.error('Login failed:', error);
+        alert('Login failed. Please try again.\n' + error);
+      });
   };
 
   return (

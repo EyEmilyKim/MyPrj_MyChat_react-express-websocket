@@ -1,14 +1,14 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
-import { styled, css, border } from '@mui/system';
+import { styled, css } from '@mui/system';
 import { Modal as BaseModal } from '@mui/base/Modal';
 import { Button, Input } from '@mui/base';
 import './LoginModal.css';
-import socket from '../../server';
 import SignupModal from '../SignupModal/SignupModal';
 import { LoginContext } from '../../contexts/LoginContext';
 import { UserContext } from '../../contexts/UserContext';
+import axios from 'axios';
 
 
 export default function LoginModal() {
@@ -26,17 +26,33 @@ export default function LoginModal() {
     event.preventDefault();
     console.log('handleLogin called', email);
 
-    socket.emit('login', email, password, (res) => {
-      console.log('login res : ', res);
-      if (res?.ok) {
-        setIsLogin(true);
-        setUser(res.user);
-      } else {
-        alert(res.error);
-      }
-    });
-
-    handleClose();
+    axios.post(
+        'http://localhost:5001/login',
+        {
+          email: email,
+          password: password,
+        },
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json', 
+          },
+        }
+      )
+      .then((res) => {
+        if (res.status === 200) {
+          setIsLogin(true);
+          setUser(res.data.user);
+          handleClose();
+        } else {
+          console.log(res.data.error);
+          alert(res.data.error);
+        }
+      })
+      .catch((error) => {
+        console.error('Login failed:', error);
+        alert('로그인 실패.\n' + error);
+      });
   };
 
   return (
