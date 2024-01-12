@@ -22,11 +22,12 @@ export default function LoginModal() {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
     console.log('handleLogin called', email);
 
-    axios.post(
+    axios
+      .post(
         'http://localhost:5001/login',
         {
           email: email,
@@ -35,17 +36,18 @@ export default function LoginModal() {
         {
           withCredentials: true,
           headers: {
-            'Content-Type': 'application/json', 
+            'Content-Type': 'application/json',
           },
         }
       )
       .then((res) => {
         if (res.status === 200) {
+          console.log('Login success');
           setIsLogin(true);
           setUser(res.data.user);
           handleClose();
         } else {
-          console.log(res.data.error);
+          console.log("Login res not 200", res.data.error);
           alert(res.data.error);
         }
       })

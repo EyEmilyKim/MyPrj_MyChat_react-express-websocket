@@ -1,4 +1,4 @@
-const Room = require('../Models/room');
+const Room = require('../models/room');
 const roomController = {};
 
 roomController.getAllRooms = async () => {

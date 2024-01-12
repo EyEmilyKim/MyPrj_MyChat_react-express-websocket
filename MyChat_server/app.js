@@ -4,7 +4,7 @@ const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const userController = require('./Controllers/user.controller.js');
+const userController = require('./controllers/user.controller.js');
 
 // DB 연결
 mongoose
@@ -30,7 +30,7 @@ app.get('/login/success', userController.loginSuccess);
 app.post("/logout", userController.logout);
 
 // 임의로 룸 만들어주기
-const Room = require('./Models/room');
+const Room = require('./models/room.js');
 app.get('/getrooms', async (req, res) => {
   Room.insertMany([
     {

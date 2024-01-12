@@ -1,4 +1,4 @@
-const Chat = require('../Models/chat');
+const Chat = require('../models/chat');
 const chatController = {};
 
 chatController.saveChat = async (message, user) => {
